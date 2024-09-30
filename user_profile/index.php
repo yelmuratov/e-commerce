@@ -1,3 +1,42 @@
+<?php
+session_start();
+$user_id = $_SESSION['user']['user_id'];
+
+// Database connection
+$conn = new PDO("mysql:host=localhost;dbname=ecommerce;", "root", "");
+$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+// Fetch user orders where the user is the product owner
+$stmtOrders = $conn->prepare("SELECT * FROM orders WHERE owner_id = :user_id");
+$stmtOrders->bindParam(':user_id', $user_id);
+$stmtOrders->execute();
+$userOrders = $stmtOrders->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch user's products
+$stmtProducts = $conn->prepare("SELECT * FROM products WHERE owner_id = :user_id");
+$stmtProducts->bindParam(':user_id', $user_id);
+$stmtProducts->execute();
+$userProducts = $stmtProducts->fetchAll(PDO::FETCH_ASSOC);
+
+// Handle order status update (if user submitted form)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
+    $order_id = $_POST['order_id'];
+    $new_status = $_POST['status'];
+
+    // Update the order status
+    $stmtUpdateStatus = $conn->prepare("UPDATE orders SET status = :status WHERE order_id = :order_id AND owner_id = :user_id");
+    $stmtUpdateStatus->bindParam(':status', $new_status);
+    $stmtUpdateStatus->bindParam(':order_id', $order_id);
+    $stmtUpdateStatus->bindParam(':user_id', $user_id);
+
+    if ($stmtUpdateStatus->execute()) {
+        echo '<script>alert("Order status updated successfully!"); window.location.reload();</script>';
+    } else {
+        echo '<script>alert("Failed to update order status.");</script>';
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,10 +56,11 @@
                     <h4>User Information</h4>
                 </div>
                 <div class="card-body">
-                    <p><strong>Name:</strong> John Doe</p>
-                    <p><strong>Email:</strong> johndoe@example.com</p>
-                    <p><strong>Member since:</strong> January 2020</p>
+                    <p><strong class="p-1">Name:</strong> <?= $_SESSION['user']['first_name'] ?></p>
+                    <p><strong class="p-1">Email:</strong> <?= $_SESSION['user']['email'] ?></p>
+                    <p><strong class="p-1">Member since:</strong> <?= $_SESSION['user']['created_at'] ?></p>
                     <a href="edit_profile.php" class="btn btn-primary btn-sm">Edit Profile</a>
+                    <a href="../admin_page/add_product.php" class="btn btn-primary btn-sm">Add Product</a>
                 </div>
             </div>
         </div>
@@ -29,7 +69,7 @@
         <div class="col-md-8">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h4>Orders</h4>
+                    <h4>Orders Received</h4>
                 </div>
                 <div class="card-body">
                     <table class="table table-striped">
@@ -43,21 +83,26 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <?php foreach ($userOrders as $order): ?>
                             <tr>
-                                <td>#12345</td>
-                                <td>2024-09-10</td>
-                                <td>Shipped</td>
-                                <td>$120.00</td>
-                                <td><a href="order_details.php?order_id=12345" class="btn btn-info btn-sm">View</a></td>
+                                <td>#<?= $order['order_id'] ?></td>
+                                <td><?= $order['order_date'] ?></td>
+                                <td><?= $order['status'] ?></td>
+                                <td>$<?= number_format($order['total_amount'], 2) ?></td>
+                                <td>
+                                    <form action="" method="POST">
+                                        <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
+                                        <select name="status" class="form-select form-select-sm">
+                                            <option value="pending" <?= $order['status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
+                                            <option value="shipped" <?= $order['status'] === 'shipped' ? 'selected' : '' ?>>Shipped</option>
+                                            <option value="delivered" <?= $order['status'] === 'delivered' ? 'selected' : '' ?>>Delivered</option>
+                                            <option value="cancelled" <?= $order['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                        </select>
+                                        <button type="submit" name="update_status" class="btn btn-sm btn-success mt-1">Update</button>
+                                    </form>
+                                </td>
                             </tr>
-                            <tr>
-                                <td>#12346</td>
-                                <td>2024-09-12</td>
-                                <td>Processing</td>
-                                <td>$85.00</td>
-                                <td><a href="order_details.php?order_id=12346" class="btn btn-info btn-sm">View</a></td>
-                            </tr>
-                            <!-- Add more orders as needed -->
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
@@ -80,21 +125,15 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <?php foreach ($userProducts as $product): ?>
                             <tr>
-                                <td>#101</td>
-                                <td>Modern Sofa</td>
-                                <td>$450.00</td>
-                                <td>Available</td>
-                                <td><a href="edit_product.php?product_id=101" class="btn btn-warning btn-sm">Edit</a></td>
+                                <td>#<?= $product['product_id'] ?></td>
+                                <td><?= $product['product_name'] ?></td>
+                                <td>$<?= number_format($product['price'], 2) ?></td>
+                                <td><?= $product['status'] === '1' ? 'Available' : 'Out of Stock' ?></td>
+                                <td><a href="edit_product.php?product_id=<?= $product['product_id'] ?>" class="btn btn-warning btn-sm">Edit</a></td>
                             </tr>
-                            <tr>
-                                <td>#102</td>
-                                <td>Leather Chair</td>
-                                <td>$300.00</td>
-                                <td>Out of Stock</td>
-                                <td><a href="edit_product.php?product_id=102" class="btn btn-warning btn-sm">Edit</a></td>
-                            </tr>
-                            <!-- Add more products as needed -->
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>

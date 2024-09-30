@@ -543,14 +543,15 @@ try {
                                                 <td><?php echo $item['owner_id']; ?></td>
                                                 <td>
                                                     <!-- Form to update product status -->
-                                                    <form action="change_product_status.php?id=<?=$item['product_id']?>" method="POST">
+                                                    <form action="change_product_status.php" method="POST">
                                                         <input type="hidden" name="product_id" value="<?= $item['product_id'] ?>"> <!-- Hidden input for product ID -->
                                                         <select name="status" id="status" class="form-control mb-2">
-                                                            <option value="0" <?php echo $item['status'] == 0 ? 'selected' : ''; ?>>Inactive</option>
-                                                            <option value="1" <?php echo $item['status'] == 1 ? 'selected' : ''; ?>>Active</option>
+                                                            <option value="0" <?= $item['status'] == 0 ? 'selected' : ''; ?>>Inactive</option>
+                                                            <option value="1" <?= $item['status'] == 1 ? 'selected' : ''; ?>>Active</option>
                                                         </select>
                                                         <button type="submit" class="btn btn-sm btn-primary">Update</button>
                                                     </form>
+
                                                 </td>
                                                 <td>
                                                     <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editProductModal<?php echo $item['product_id']; ?>">

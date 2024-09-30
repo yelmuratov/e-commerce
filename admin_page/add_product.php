@@ -1,6 +1,6 @@
 <?php
 session_start();
-if ($_SESSION['user']['role'] != 'admin') {
+if (!isset($_SESSION['user'])) {
     ?>
     <script>
         alert("You do not have permission to access this page.");
@@ -46,7 +46,7 @@ if (isset($_POST['ok'])) {
         $stmt->bindParam(':quantity', $quantity);
 
         if ($stmt->execute()) {
-            echo '<script>alert("Product added successfully!"); window.location = "index.php?products";</script>';
+            echo '<script>alert("Product added successfully!"); window.location = history.back();</script>';
         } else {
             echo "Failed to add product!";
         }
