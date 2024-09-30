@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1
--- Время создания: Сен 28 2024 г., 06:36
+-- Время создания: Сен 30 2024 г., 14:12
 -- Версия сервера: 10.4.32-MariaDB
 -- Версия PHP: 8.2.12
 
@@ -133,6 +133,7 @@ CREATE TABLE `orders` (
   `order_id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
   `owner_id` int(11) NOT NULL DEFAULT 1,
+  `product_id` int(11) NOT NULL,
   `country` varchar(200) NOT NULL,
   `address` varchar(200) NOT NULL,
   `state` varchar(200) NOT NULL,
@@ -141,16 +142,26 @@ CREATE TABLE `orders` (
   `order_date` timestamp NOT NULL DEFAULT current_timestamp(),
   `message` text NOT NULL,
   `total_amount` decimal(10,2) NOT NULL,
-  `status` varchar(50) NOT NULL DEFAULT 'Pending'
+  `status` varchar(50) NOT NULL DEFAULT 'Pending',
+  `quantity` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Дамп данных таблицы `orders`
 --
 
-INSERT INTO `orders` (`order_id`, `user_id`, `owner_id`, `country`, `address`, `state`, `zip`, `phone`, `order_date`, `message`, `total_amount`, `status`) VALUES
-(31, 1, 2, '', '', '', '', '', '2024-09-27 07:34:56', '', 100.50, 'delivered'),
-(32, 2, 3, '', '', '', '', '', '2024-09-28 08:45:00', '', 200.75, 'pending');
+INSERT INTO `orders` (`order_id`, `user_id`, `owner_id`, `product_id`, `country`, `address`, `state`, `zip`, `phone`, `order_date`, `message`, `total_amount`, `status`, `quantity`) VALUES
+(31, 1, 2, 0, '', '', '', '', '', '2024-09-27 07:34:56', '', 100.50, 'delivered', 0),
+(32, 2, 3, 0, '', '', '', '', '', '2024-09-28 08:45:00', '', 200.75, 'pending', 0),
+(35, 40, 45, 0, '2', 'Tashkent, Uzbekistan', 'Sergeli', '100012', '8913892033', '2024-09-30 07:54:44', 'Hi', 50.00, 'pending', 0),
+(36, 40, 45, 0, '2', 'Tashkent, Uzbekistan', 'Sergeli', '100012', '8913892033', '2024-09-30 07:54:44', 'Hi', 50.00, 'pending', 0),
+(37, 40, 45, 0, 'Russia', 'Tashkent, Uzbekistan', 'Sergeli', '100012', '8913892033', '2024-09-30 08:01:23', 'Hi', 50.00, 'cancelled', 0),
+(38, 40, 45, 0, 'Russia', 'Tashkent, Uzbekistan', 'Sergeli', '100012', '8913892033', '2024-09-30 08:01:23', 'Hi', 50.00, 'delivered', 0),
+(55, 40, 1, 0, 'Uzbekistan', '', '', '', '', '2024-09-30 08:57:14', '', 900.00, 'pending', 0),
+(57, 40, 1, 0, 'Uzbekistan', '', '', '', '', '2024-09-30 08:59:34', '', 1200.00, 'pending', 0),
+(58, 40, 1, 0, 'Uzbekistan', '', '', '', '', '2024-09-30 09:00:05', '', 1500.00, 'cancelled', 0),
+(59, 40, 1, 0, 'Uzbekistan', '', '', '', '', '2024-09-30 09:03:39', '', 1500.00, 'pending', 0),
+(60, 40, 1, 0, 'Uzbekistan', '', '', '', '', '2024-09-30 09:08:49', '', 800.00, 'pending', 0);
 
 -- --------------------------------------------------------
 
@@ -161,12 +172,21 @@ INSERT INTO `orders` (`order_id`, `user_id`, `owner_id`, `country`, `address`, `
 CREATE TABLE `order_details` (
   `order_detail_id` int(11) NOT NULL,
   `order_id` int(11) DEFAULT NULL,
-  `country` varchar(200) NOT NULL,
-  `address` varchar(200) NOT NULL,
   `product_id` int(11) DEFAULT NULL,
   `quantity` int(11) NOT NULL,
-  `price` decimal(10,2) NOT NULL
+  `total_amount` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Дамп данных таблицы `order_details`
+--
+
+INSERT INTO `order_details` (`order_detail_id`, `order_id`, `product_id`, `quantity`, `total_amount`) VALUES
+(1, 55, 14, 30, 900),
+(2, 57, 14, 40, 1200),
+(3, 58, 14, 50, 1500),
+(4, 59, 14, 50, 1500),
+(5, 60, 13, 40, 800);
 
 -- --------------------------------------------------------
 
@@ -359,13 +379,13 @@ ALTER TABLE `contact_messages`
 -- AUTO_INCREMENT для таблицы `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT для таблицы `order_details`
 --
 ALTER TABLE `order_details`
-  MODIFY `order_detail_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `order_detail_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `products`
